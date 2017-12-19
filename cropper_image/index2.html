@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		img {
+		  max-width: 100%; /* This rule is very important, please do not ignore this! */
+		}
+		.image_container{
+			width:600px;
+			height: 500px;	
+		}
+	</style>
+	<script
+			  src="jquery.js"/script>
+	<link  href="cropper.min.css" rel="stylesheet">
+	<script src="cropper.min.js"></script>
+</head>
+<body>
+	
+	<input type="file" name="image" id="image" onchange="readURL(this);"/>
+	<div class="image_container">
+		<img id="blah" src="#" alt="your image" />
+	</div>
+	<div id="cropped_result"></div>
+	<button id="crop_button">Crop</button>
+
+
+	<script type="text/javascript" defer>
+		function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#blah').attr('src', e.target.result)
+                };
+                reader.readAsDataURL(input.files[0]);
+                setTimeout(initCropper, 1000);
+            }
+        }
+
+	    function initCropper(){
+	    	console.log("Came here")
+	    	var image = document.getElementById('blah');
+			var cropper = new Cropper(image, {
+			  aspectRatio: 1 / 1,
+			  crop: function(e) {
+			    console.log(e.detail.x);
+			    console.log(e.detail.y);
+			  }
+			});
+
+			// On crop button clicked
+			document.getElementById('crop_button').addEventListener('click', function()
+			{
+					//alert("works");
+	    		var imgurl =  cropper.getCroppedCanvas().toDataURL();
+	    		alert("Works");
+	    		var img = document.createElement("img");
+	    		alert("Works");
+	    		img.src = imgurl;
+	    		alert("Works");
+	    		document.getElementById("cropped_result").appendChild(img);
+	    		//alert("Works");
+					cropper.getCroppedCanvas().toBlob(function (blob) {
+
+						  var formData = new FormData();
+
+						  formData.append('croppedImage', blob);
+						  // Use `jQuery.ajax` method
+						  $.ajax('/home/shohan/Downloads/Cropper_image/cropped/', {
+						    method: "POST",
+						    data: formData,
+						    processData: false,
+						    contentType: false,
+						    success: function () {
+						      alert('Upload success');
+						    },
+						    error: function () {
+						      alert('Upload error');
+						    }
+						  });
+					});
+
+
+	    		
+	    	})
+	    }
+	</script>
+</body>
+</html>
+
+
+
+<!--
+// client side
+var cropcanvas = $('#imagetocrop').cropper('getCroppedCanvas');
+var croppng = cropcanvas.toDataURL("image/png");
+
+$.ajax({
+type: 'POST',
+url: 'savecropimage.php',
+data: {
+pngimageData: croppng,
+filename: 'test.png'
+},
+success: function(output) {
+}
+})
+//server side php
+$filename = $_POST['filename'];
+$img = $_POST['pngimageData'];
+$img = str_replace('data:image/png;base64,', '', $img);
+$img = str_replace(' ', '+', $img);
+$data = base64_decode($img);
+file_put_contents($filename, $data);
+-->
